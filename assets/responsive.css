@@ -1118,6 +1118,40 @@ table tr:hover {
 }
 
 /* ============================================
+   FULLSCREEN TOGGLE BUTTON
+   ============================================ */
+
+.fullscreen-toggle {
+    position: relative !important;
+    background: none !important;
+    border: none !important;
+    font-size: 18px !important;
+    color: var(--dark) !important;
+    cursor: pointer !important;
+    padding: 6px !important;
+    transition: all var(--transition-speed) ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+}
+
+.fullscreen-toggle:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    transform: scale(1.1) !important;
+}
+
+.fullscreen-toggle i {
+    transition: transform var(--transition-speed) ease !important;
+}
+
+.fullscreen-toggle:hover i {
+    transform: scale(1.2) !important;
+}
+
+/* ============================================
    RESPONSIVE BREAKPOINTS - ENHANCEMENTS
    ============================================ */
 

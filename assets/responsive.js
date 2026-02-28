@@ -2,7 +2,7 @@
  * Mobile Menu Toggle Script
  * Expense Management ERP - Loydence Academy
  * 
- * Handles mobile navigation, table wrapping, and responsive behavior
+ * Handles mobile navigation, table wrapping, responsive behavior, and fullscreen toggle
  * Mobile-first approach
  */
 
@@ -12,6 +12,7 @@
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', function () {
         initMobileMenu();
+        initFullscreenToggle();
         wrapTables();
         handleResize();
     });
@@ -71,6 +72,114 @@
             icon.classList.add('fa-bars');
             document.body.style.overflow = '';
         });
+    }
+
+    /**
+     * Initialize fullscreen toggle button
+     */
+    function initFullscreenToggle() {
+        // Check if fullscreen toggle already exists
+        if (document.querySelector('.fullscreen-toggle')) return;
+
+        // Find header actions container
+        let headerActions = document.querySelector('.header-actions');
+
+        // If no header actions, create one in the top header
+        if (!headerActions) {
+            const topHeader = document.querySelector('.top-header');
+            if (topHeader) {
+                headerActions = document.createElement('div');
+                headerActions.className = 'header-actions';
+                topHeader.appendChild(headerActions);
+            }
+        }
+
+        // If still no container, exit
+        if (!headerActions) return;
+
+        // Create fullscreen toggle button
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'fullscreen-toggle';
+        fullscreenBtn.setAttribute('aria-label', 'Toggle fullscreen');
+        fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
+        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+
+        // Add click handler for fullscreen
+        fullscreenBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            toggleFullscreen();
+        });
+
+        // Add button to header
+        headerActions.appendChild(fullscreenBtn);
+
+        // Listen for fullscreen changes to update icon
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+        document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
+        document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
+    }
+
+    /**
+     * Toggle fullscreen mode
+     */
+    function toggleFullscreen() {
+        const elem = document.documentElement;
+
+        // Check if in fullscreen
+        if (!document.fullscreenElement &&
+            !document.webkitFullscreenElement &&
+            !document.mozFullScreenElement &&
+            !document.msFullscreenElement) {
+
+            // Enter fullscreen
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) { /* Firefox */
+                elem.mozRequestFullScreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { /* Safari */
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) { /* IE11 */
+                document.msExitFullscreen();
+            }
+        }
+    }
+
+    /**
+     * Update fullscreen icon based on current state
+     */
+    function updateFullscreenIcon() {
+        const btn = document.querySelector('.fullscreen-toggle');
+        if (!btn) return;
+
+        const icon = btn.querySelector('i');
+        if (!icon) return;
+
+        const isFullscreen = document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement;
+
+        if (isFullscreen) {
+            icon.classList.remove('fa-expand');
+            icon.classList.add('fa-compress');
+            btn.setAttribute('title', 'Exit Fullscreen');
+        } else {
+            icon.classList.remove('fa-compress');
+            icon.classList.add('fa-expand');
+            btn.setAttribute('title', 'Toggle Fullscreen');
+        }
     }
 
     /**
