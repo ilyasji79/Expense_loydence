@@ -116,7 +116,7 @@ $pageTitle = 'Pending Approvals';
         .main-content { margin-left: var(--sidebar-width); padding: 20px; min-height: 100vh; }
         
         .top-header { background: white; padding: 15px 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .top-header h1 22px; { font-size: color: var(--dark); }
+        .top-header h1 { font-size: 22px; color: var(--dark); }
         
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }

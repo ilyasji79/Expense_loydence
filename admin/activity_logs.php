@@ -198,7 +198,6 @@ $pageTitle = 'Activity Logs';
                         <th>User</th>
                         <th>Action</th>
                         <th>Details</th>
-                        <th>IP Address</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -218,11 +217,10 @@ $pageTitle = 'Activity Logs';
                                 </span>
                             </td>
                             <td><?php echo htmlspecialchars($log['details'] ?? '-'); ?></td>
-                            <td><?php echo htmlspecialchars($log['ip_address'] ?? '-'); ?></td>
                         </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="5" style="text-align: center; padding: 30px;">No activity logs found</td></tr>
+                        <tr><td colspan="4" style="text-align: center; padding: 30px;">No activity logs found</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

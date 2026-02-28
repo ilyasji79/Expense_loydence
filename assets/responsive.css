@@ -877,6 +877,9 @@ table tr:hover {
     font-size: 18px !important;
     font-weight: 600 !important;
     margin-bottom: 5px !important;
+    word-wrap: break-word !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .login-header p {
@@ -886,6 +889,68 @@ table tr:hover {
 
 .login-body {
     padding: 25px 20px !important;
+}
+
+/* Form inputs with icons */
+.login-body .form-group {
+    margin-bottom: 20px !important;
+}
+
+.login-body .form-group label {
+    display: block !important;
+    margin-bottom: 8px !important;
+    color: #333 !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+.login-body .form-group .input-wrapper {
+    position: relative !important;
+    width: 100% !important;
+}
+
+.login-body .form-group .input-wrapper i {
+    position: absolute !important;
+    left: 15px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #666 !important;
+    z-index: 1 !important;
+    width: 18px !important;
+    text-align: center !important;
+}
+
+.login-body .form-group input {
+    width: 100% !important;
+    padding: 14px 14px 14px 48px !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+    font-family: inherit !important;
+    transition: all 0.3s ease !important;
+    box-sizing: border-box !important;
+    min-height: 48px !important;
+}
+
+.login-body .form-group input:focus {
+    outline: none !important;
+    border-color: var(--secondary) !important;
+    box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1) !important;
+}
+
+.login-body .btn-login {
+    width: 100% !important;
+    padding: 15px !important;
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-family: inherit !important;
+    min-height: 48px !important;
 }
 
 .login-footer {
@@ -914,6 +979,79 @@ table tr:hover {
     border-radius: 6px !important;
     font-size: 11px !important;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Very small screens (< 360px) */
+@media (max-width: 360px) {
+    body {
+        padding: 10px !important;
+    }
+
+    .login-container {
+        margin: 5px !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .login-header {
+        padding: 25px 15px !important;
+    }
+
+    .login-header .logo {
+        width: 55px !important;
+        height: 55px !important;
+        font-size: 24px !important;
+    }
+
+    .login-header h1 {
+        font-size: 16px !important;
+    }
+
+    .login-header p {
+        font-size: 12px !important;
+    }
+
+    .login-body {
+        padding: 20px 15px !important;
+    }
+
+    .login-body .form-group input {
+        padding: 12px 12px 12px 45px !important;
+        font-size: 14px !important;
+        min-height: 44px !important;
+    }
+
+    .login-body .form-group .input-wrapper i {
+        left: 14px !important;
+        font-size: 14px !important;
+    }
+
+    .login-body .btn-login {
+        padding: 12px !important;
+        font-size: 14px !important;
+        min-height: 44px !important;
+    }
+
+    .login-footer {
+        padding: 12px 10px !important;
+    }
+
+    .login-footer p {
+        font-size: 11px !important;
+    }
+
+    .login-footer .credentials {
+        gap: 8px !important;
+    }
+
+    .login-footer .credential-box {
+        padding: 6px 8px !important;
+        font-size: 10px !important;
+    }
 }
 
 /* ============================================

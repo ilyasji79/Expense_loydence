@@ -32,7 +32,8 @@ ini_set('display_errors', 1);
 
 // Base URL
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-define('BASE_URL', $protocol . '://' . $_SERVER['HTTP_HOST'] . '/Expense_loydence');
+$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+define('BASE_URL', $protocol . '://' . $host . '/Expense_loydence');
 
 // Upload configuration
 define('UPLOAD_PATH', __DIR__ . '/../uploads/');

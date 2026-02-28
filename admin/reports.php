@@ -62,6 +62,7 @@ $pageTitle = 'Reports';
     <title><?php echo $pageTitle; ?> - <?php echo $siteName; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/responsive.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #1e3c72; --secondary: #2a5298; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --dark: #343a40; --sidebar-width: 260px; }
@@ -79,7 +80,9 @@ $pageTitle = 'Reports';
         .menu-item i { width: 25px; font-size: 16px; }
         .menu-item span { font-size: 14px; }
         
-        .main-content { margin-left: var(--sidebar-width); padding: 20px; min-height: 100vh; }
+        .main-content { margin-left: var(--sidebar-width); padding: 20px; min-height: 100vh; width: calc(100% - var(--sidebar-width)); overflow-x: visible; }
+        
+        .main-content > * { max-width: 100%; overflow-x: visible; }
         
         .top-header { background: white; padding: 15px 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .top-header h1 { font-size: 22px; color: var(--dark); }
@@ -137,7 +140,7 @@ $pageTitle = 'Reports';
             <a href="expenses.php" class="menu-item"><i class="fas fa-file-invoice-dollar"></i><span>Expenses</span></a>
             <a href="add_expense.php" class="menu-item"><i class="fas fa-plus-circle"></i><span>Add Expense</span></a>
             <a href="opening_balance.php" class="menu-item"><i class="fas fa-wallet"></i><span>Opening Balance</span></a>
-            <a href="release_funds.php" class="menu-item"><i class="fas fa-money-bill-wave">Release Funds</span</i><span>></a>
+            <a href="release_funds.php" class="menu-item"><i class="fas fa-money-bill-wave"></i><span>Release Funds</span></a>
             <div class="menu-section">Reports</div>
             <a href="reports.php" class="menu-item active"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
             <a href="activity_logs.php" class="menu-item"><i class="fas fa-history"></i><span>Activity Logs</span></a>

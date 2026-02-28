@@ -250,6 +250,27 @@ $hrName = getSetting($db, 'hr_name', HR_NAME);
                 padding: 30px 20px;
             }
         }
+
+        @media (max-width: 360px) {
+            .login-container {
+                max-width: 100%;
+                margin: 10px;
+                min-width: 320px;
+            }
+
+            .form-group input {
+                padding-left: 50px;
+            }
+
+            .form-group .input-wrapper i {
+                left: 18px;
+            }
+
+            .login-footer .credential-box {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
