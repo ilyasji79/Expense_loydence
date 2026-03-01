@@ -706,3 +706,13 @@ function formatEmployeeCurrency($amount) {
     return number_format($amount, 2) . ' QAR';
 }
 
+// Get all employees
+function getAllEmployees($db, $activeOnly = true) {
+    $sql = "SELECT * FROM employees";
+    if ($activeOnly) {
+        $sql .= " WHERE is_active = 1";
+    }
+    $sql .= " ORDER BY full_name";
+    return $db->fetchAll($sql);
+}
+
