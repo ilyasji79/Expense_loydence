@@ -184,7 +184,7 @@ $pageTitle = 'Payroll Management';
             <a href="attendance.php" class="menu-item"><i class="fas fa-clock"></i><span>Attendance</span></a>
             <a href="payroll.php" class="menu-item active"><i class="fas fa-money-bill-wave"></i><span>Payroll</span></a>
             <a href="leave_requests.php" class="menu-item"><i class="fas fa-calendar-minus"></i><span>Leave Requests</span></a>
-            <a href="employee_reports.php" class="menu-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+<a href="reports.php" class="menu-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
             <div class="menu-section">Account</div>
             <a href="../logout.php" class="menu-item"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
         </div>

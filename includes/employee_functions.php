@@ -5,6 +5,8 @@
  */
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/employee_auth.php';
 
 // ============================================================
 // ATTENDANCE FUNCTIONS
@@ -704,15 +706,5 @@ function getEmployeesByDepartment($db, $department) {
 // Format currency helper
 function formatEmployeeCurrency($amount) {
     return number_format($amount, 2) . ' QAR';
-}
-
-// Get all employees
-function getAllEmployees($db, $activeOnly = true) {
-    $sql = "SELECT * FROM employees";
-    if ($activeOnly) {
-        $sql .= " WHERE is_active = 1";
-    }
-    $sql .= " ORDER BY full_name";
-    return $db->fetchAll($sql);
 }
 
