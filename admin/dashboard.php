@@ -37,10 +37,15 @@ $pageTitle = 'Admin Dashboard';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - <?php echo $siteName; ?></title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/responsive.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
     <style>
         * {
             margin: 0;
@@ -160,6 +165,11 @@ $pageTitle = 'Admin Dashboard';
             margin-left: var(--sidebar-width);
             padding: 20px;
             min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+            max-width: calc(100vw - var(--sidebar-width));
+            overflow-x: hidden;
+            flex: 1;
+            box-sizing: border-box;
         }
 
         /* Top Header */
@@ -650,6 +660,9 @@ $pageTitle = 'Admin Dashboard';
         </div>
     </div>
 
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Header -->
@@ -674,210 +687,255 @@ $pageTitle = 'Admin Dashboard';
             </div>
         </div>
 
-        <!-- Alert for low balance -->
-        <?php if ($remainingBalance < $warningBalance): ?>
-            <div class="alert-box">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Warning: Remaining Balance is below <?php echo formatCurrency($warningBalance); ?>! Current: <?php echo formatCurrency($remainingBalance); ?></p>
-            </div>
-        <?php endif; ?>
-
-        <!-- Financial Cards -->
-        <div class="cards-grid">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon blue">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                </div>
-                <div class="card-title">Opening Balance</div>
-                <div class="card-amount"><?php echo formatCurrency($financialSummary['total_opening_balance']); ?></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon yellow">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                </div>
-                <div class="card-title">Pending HR Approval</div>
-                <div class="card-amount"><?php echo formatCurrency($financialSummary['pending_approval_amount']); ?></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon purple">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
-                <div class="card-title">Approved Not Released</div>
-                <div class="card-amount"><?php echo formatCurrency($financialSummary['approved_not_released_amount']); ?></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon green">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                </div>
-                <div class="card-title">Total Released</div>
-                <div class="card-amount"><?php echo formatCurrency($financialSummary['total_released_amount']); ?></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon <?php echo $remainingBalance < $warningBalance ? 'red' : 'green'; ?>">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                </div>
-                <div class="card-title">Remaining Balance</div>
-                <div class="card-amount <?php echo $remainingBalance < $warningBalance ? 'warning' : ''; ?>">
-                    <?php echo formatCurrency($remainingBalance); ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3><i class="fas fa-chart-pie"></i> Expense Category Distribution</h3>
-                <div class="chart-container">
-                    <canvas id="categoryPieChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="chart-card">
-                <h3><i class="fas fa-chart-bar"></i> Monthly Released Funds</h3>
-                <div class="chart-container">
-                    <canvas id="monthlyBarChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Counters -->
-        <div class="table-card">
-            <div class="table-header">
-                <h3><i class="fas fa-tasks"></i> Approval Status Overview</h3>
-            </div>
-            <div class="status-counters">
-                <?php 
-                $statusData = [
-                    'pending' => ['Pending', 'yellow', 'fa-clock'],
-                    'approved' => ['Approved', 'green', 'fa-check'],
-                    'rejected' => ['Rejected', 'red', 'fa-times'],
-                    'released' => ['Released', 'blue', 'fa-check-circle']
-                ];
-                
-                $counts = array_fill_keys(['pending', 'approved', 'rejected', 'released'], ['count' => 0, 'total' => 0]);
-                foreach ($statusCounts as $sc) {
-                    $counts[$sc['status']] = $sc;
-                }
-                ?>
-                
-                <div class="status-counter pending">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <div class="count"><?php echo $counts['pending']['count']; ?></div>
-                        <small>Pending</small>
-                    </div>
-                </div>
-                <div class="status-counter approved">
-                    <i class="fas fa-check"></i>
-                    <div>
-                        <div class="count"><?php echo $counts['approved']['count']; ?></div>
-                        <small>Approved</small>
-                    </div>
-                </div>
-                <div class="status-counter rejected">
-                    <i class="fas fa-times"></i>
-                    <div>
-                        <div class="count"><?php echo $counts['rejected']['count']; ?></div>
-                        <small>Rejected</small>
-                    </div>
-                </div>
-                <div class="status-counter released">
-                    <i class="fas fa-check-circle"></i>
-                    <div>
-                        <div class="count"><?php echo $counts['released']['count']; ?></div>
-                        <small>Released</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Expenses -->
-        <div class="table-card">
-            <div class="table-header">
-                <h3><i class="fas fa-list"></i> Recent Expenses</h3>
-                <a href="expenses.php" class="btn btn-primary btn-sm">View All</a>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Voucher No</th>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (count($recentExpenses) > 0): ?>
-                        <?php foreach ($recentExpenses as $expense): ?>
-                        <tr>
-                            <td><strong><?php echo htmlspecialchars($expense['voucher_no']); ?></strong></td>
-                            <td><?php echo formatDate($expense['date']); ?></td>
-                            <td><?php echo htmlspecialchars($expense['category_name']); ?></td>
-                            <td><?php echo htmlspecialchars(substr($expense['description'], 0, 50)); ?>...</td>
-                            <td><strong><?php echo formatCurrency($expense['amount']); ?></strong></td>
-                            <td>
-                                <span class="status-badge status-<?php echo $expense['status']; ?>">
-                                    <?php echo ucfirst($expense['status']); ?>
-                                </span>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px;">No expenses found</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Activity Log -->
-        <div class="table-card">
-            <div class="table-header">
-                <h3><i class="fas fa-history"></i> Recent Activities</h3>
-                <a href="activity_logs.php" class="btn btn-primary btn-sm">View All</a>
-            </div>
-            <div class="activity-list">
-                <?php if (count($recentActivities) > 0): ?>
-                    <?php foreach ($recentActivities as $activity): ?>
-                    <div class="activity-item">
-                        <div class="activity-icon <?php echo strpos($activity['action'], 'created') !== false ? 'create' : (strpos($activity['action'], 'approved') !== false ? 'approve' : (strpos($activity['action'], 'released') !== false ? 'release' : 'delete')); ?>">
-                            <i class="fas <?php 
-                                echo strpos($activity['action'], 'created') !== false ? 'fa-plus' : 
-                                    (strpos($activity['action'], 'approved') !== false ? 'fa-check' : 
-                                    (strpos($activity['action'], 'released') !== false ? 'fa-money-bill-wave' : 'fa-edit')); 
-                            ?>"></i>
+        <!-- Financial Cards Row -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon blue">
+                                <i class="fas fa-wallet"></i>
+                            </div>
                         </div>
-                        <div class="activity-content">
-                            <p><?php echo htmlspecialchars($activity['details']); ?></p>
-                            <span><?php echo htmlspecialchars($activity['user_name'] ?? 'System'); ?> - <?php echo formatDateTime($activity['created_at']); ?></span>
+                        <div class="card-title">Opening Balance</div>
+                        <div class="card-amount"><?php echo formatCurrency($financialSummary['total_opening_balance']); ?></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon yellow">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="card-title">Pending HR Approval</div>
+                        <div class="card-amount"><?php echo formatCurrency($financialSummary['pending_approval_amount']); ?></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon purple">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="card-title">Approved Not Released</div>
+                        <div class="card-amount"><?php echo formatCurrency($financialSummary['approved_not_released_amount']); ?></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon green">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                        <div class="card-title">Total Released</div>
+                        <div class="card-amount"><?php echo formatCurrency($financialSummary['total_released_amount']); ?></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon <?php echo $remainingBalance < $warningBalance ? 'red' : 'green'; ?>">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                        </div>
+                        <div class="card-title">Remaining Balance</div>
+                        <div class="card-amount <?php echo $remainingBalance < $warningBalance ? 'warning' : ''; ?>">
+                            <?php echo formatCurrency($remainingBalance); ?>
                         </div>
                     </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p style="text-align: center; padding: 20px; color: #999;">No recent activities</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-Column Layout - Fixed for viewport -->
+        <div class="row g-3">
+            <!-- Left Column: Status Counters & Quick Stats -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <!-- Alert for low balance -->
+                <?php if ($remainingBalance < $warningBalance): ?>
+                <div class="alert-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Warning: Balance below <?php echo formatCurrency($warningBalance); ?>!</p>
+                </div>
                 <?php endif; ?>
+
+                <!-- Status Counters -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-tasks"></i> Approval Status</h3>
+                    </div>
+                    <div class="status-counters">
+                        <?php 
+                        $statusData = [
+                            'pending' => ['Pending', 'yellow', 'fa-clock'],
+                            'approved' => ['Approved', 'green', 'fa-check'],
+                            'rejected' => ['Rejected', 'red', 'fa-times'],
+                            'released' => ['Released', 'blue', 'fa-check-circle']
+                        ];
+                        
+                        $counts = array_fill_keys(['pending', 'approved', 'rejected', 'released'], ['count' => 0, 'total' => 0]);
+                        foreach ($statusCounts as $sc) {
+                            $counts[$sc['status']] = $sc;
+                        }
+                        ?>
+                        
+                        <div class="status-counter pending">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <div class="count"><?php echo $counts['pending']['count']; ?></div>
+                                <small>Pending</small>
+                            </div>
+                        </div>
+                        <div class="status-counter approved">
+                            <i class="fas fa-check"></i>
+                            <div>
+                                <div class="count"><?php echo $counts['approved']['count']; ?></div>
+                                <small>Approved</small>
+                            </div>
+                        </div>
+                        <div class="status-counter rejected">
+                            <i class="fas fa-times"></i>
+                            <div>
+                                <div class="count"><?php echo $counts['rejected']['count']; ?></div>
+                                <small>Rejected</small>
+                            </div>
+                        </div>
+                        <div class="status-counter released">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <div class="count"><?php echo $counts['released']['count']; ?></div>
+                                <small>Released</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="add_expense.php" class="btn btn-primary w-100"><i class="fas fa-plus"></i> Add Expense</a>
+                        <a href="release_funds.php" class="btn btn-success w-100"><i class="fas fa-money-bill-wave"></i> Release Funds</a>
+                        <a href="reports.php" class="btn" style="background: #6c757d; color: white;"><i class="fas fa-chart-bar"></i> View Reports</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column: Charts & Recent Expenses -->
+            <div class="col-12 col-md-6 col-lg-6">
+                <!-- Charts -->
+                <div class="charts-grid mb-4">
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-pie"></i> Expense Category Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryPieChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-bar"></i> Monthly Released Funds</h3>
+                        <div class="chart-container">
+                            <canvas id="monthlyBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Expenses -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-list"></i> Recent Expenses</h3>
+                        <a href="expenses.php" class="btn btn-primary btn-sm">View All</a>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Voucher No</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (count($recentExpenses) > 0): ?>
+                                    <?php foreach ($recentExpenses as $expense): ?>
+                                    <tr>
+                                        <td><strong><?php echo htmlspecialchars($expense['voucher_no']); ?></strong></td>
+                                        <td><?php echo formatDate($expense['date']); ?></td>
+                                        <td><?php echo htmlspecialchars($expense['category_name']); ?></td>
+                                        <td><strong><?php echo formatCurrency($expense['amount']); ?></strong></td>
+                                        <td>
+                                            <span class="status-badge status-<?php echo $expense['status']; ?>">
+                                                <?php echo ucfirst($expense['status']); ?>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 30px;">No expenses found</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Activity Log & Widgets -->
+            <div class="col-12 col-lg-3">
+                <!-- Activity Log -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-history"></i> Recent Activities</h3>
+                        <a href="activity_logs.php" class="btn btn-primary btn-sm">View All</a>
+                    </div>
+                    <div class="activity-list">
+                        <?php if (count($recentActivities) > 0): ?>
+                            <?php foreach ($recentActivities as $activity): ?>
+                            <div class="activity-item">
+                                <div class="activity-icon <?php echo strpos($activity['action'], 'created') !== false ? 'create' : (strpos($activity['action'], 'approved') !== false ? 'approve' : (strpos($activity['action'], 'released') !== false ? 'release' : 'delete')); ?>">
+                                    <i class="fas <?php 
+                                        echo strpos($activity['action'], 'created') !== false ? 'fa-plus' : 
+                                            (strpos($activity['action'], 'approved') !== false ? 'fa-check' : 
+                                            (strpos($activity['action'], 'released') !== false ? 'fa-money-bill-wave' : 'fa-edit')); 
+                                    ?>"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><?php echo htmlspecialchars($activity['details']); ?></p>
+                                    <span><?php echo htmlspecialchars($activity['user_name'] ?? 'System'); ?> - <?php echo formatDateTime($activity['created_at']); ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p style="text-align: center; padding: 20px; color: #999;">No recent activities</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="card">
+                    <h3><i class="fas fa-info-circle"></i> System Info</h3>
+                    <div class="mb-2">
+                        <small class="text-muted">School</small>
+                        <p class="mb-0"><?php echo htmlspecialchars($siteName); ?></p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Admin</small>
+                        <p class="mb-0"><?php echo htmlspecialchars($adminName); ?></p>
+                    </div>
+                    <div>
+                        <small class="text-muted">HR Manager</small>
+                        <p class="mb-0"><?php echo htmlspecialchars($hrName); ?></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/responsive.js"></script>
     <script>
         // Category Pie Chart

@@ -107,9 +107,17 @@ $pageTitle = 'Database Backup';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - <?php echo $siteName; ?></title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/responsive.css">
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #1e3c72; --secondary: #2a5298; --success: #28a745; --danger: #dc3545; --dark: #343a40; --sidebar-width: 260px; }
@@ -190,12 +198,14 @@ $pageTitle = 'Database Backup';
     <div class="main-content">
         <div class="top-header">
             <h1><i class="fas fa-database"></i> <?php echo $pageTitle; ?></h1>
-            <div class="user-info">
-                <div class="user-details">
-                    <div class="name"><?php echo $_SESSION['full_name']; ?></div>
-                    <div class="role"><?php echo ucfirst($_SESSION['role_name']); ?></div>
+            <div class="header-actions">
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="name"><?php echo $_SESSION['full_name']; ?></div>
+                        <div class="role"><?php echo ucfirst($_SESSION['role_name']); ?></div>
+                    </div>
+                    <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
                 </div>
-                <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
             </div>
         </div>
 

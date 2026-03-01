@@ -14,6 +14,8 @@ if (hasRole($db, 'admin')) {
     redirect(BASE_URL . '/admin/dashboard.php');
 } elseif (hasRole($db, 'hr_manager')) {
     redirect(BASE_URL . '/hr/dashboard.php');
+} elseif (hasRole($db, 'employee')) {
+    redirect(BASE_URL . '/employee/dashboard.php');
 } else {
     // Default redirect for other roles
     redirect(BASE_URL . '/login.php');

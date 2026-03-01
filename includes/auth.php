@@ -20,6 +20,15 @@ function login($db, $username, $password) {
         return ['success' => false, 'message' => 'Invalid username or password'];
     }
     
+    // Check user status (for employee accounts)
+    if (isset($user['status']) && $user['status'] === 'pending') {
+        return ['success' => false, 'message' => 'Your account is pending approval. Please contact HR.'];
+    }
+    
+    if (isset($user['status']) && $user['status'] === 'rejected') {
+        return ['success' => false, 'message' => 'Your account has been rejected. Please contact HR.'];
+    }
+    
     // Set session
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];

@@ -93,8 +93,18 @@ $pageTitle = 'Pending Approvals';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - <?php echo $siteName; ?></title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/responsive.css">
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/responsive.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #1e3c72; --secondary: #2a5298; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --info: #17a2b8; --dark: #343a40; --sidebar-width: 260px; }
@@ -117,6 +127,8 @@ $pageTitle = 'Pending Approvals';
         
         .top-header { background: white; padding: 15px 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .top-header h1 { font-size: 22px; color: var(--dark); }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
         
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
@@ -186,12 +198,14 @@ $pageTitle = 'Pending Approvals';
     <div class="main-content">
         <div class="top-header">
             <h1><i class="fas fa-clipboard-check"></i> <?php echo $pageTitle; ?></h1>
-            <div class="user-info">
-                <div class="user-details">
-                    <div class="name"><?php echo $_SESSION['full_name']; ?></div>
-                    <div class="role"><?php echo ucfirst(str_replace('_', ' ', $_SESSION['role_name'])); ?></div>
+            <div class="header-actions">
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="name"><?php echo $_SESSION['full_name']; ?></div>
+                        <div class="role"><?php echo ucfirst(str_replace('_', ' ', $_SESSION['role_name'])); ?></div>
+                    </div>
+                    <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
                 </div>
-                <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
             </div>
         </div>
 

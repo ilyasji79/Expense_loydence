@@ -41,11 +41,21 @@ $pageTitle = 'HR Reports';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - <?php echo $siteName; ?></title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/responsive.css">
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/responsive.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --primary: #1e3c72; --secondary: #2a5298; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --dark: #343a40; --sidebar-width: 260px; }
+        :root { --primary: #1e3c72; --secondary: #2a5298; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --info: #17a2b8; --dark: #343a40; --sidebar-width: 260px; }
         body { font-family: 'Poppins', sans-serif; background: #f5f7fa; min-height: 100vh; }
         
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); color: white; overflow-y: auto; z-index: 1000; }
@@ -59,11 +69,14 @@ $pageTitle = 'HR Reports';
         .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); border-left-color: var(--warning); }
         .menu-item i { width: 25px; font-size: 16px; }
         .menu-item span { font-size: 14px; }
+        .menu-item .badge { margin-left: auto; background: var(--danger); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
         
         .main-content { margin-left: var(--sidebar-width); padding: 20px; min-height: 100vh; }
         
         .top-header { background: white; padding: 15px 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .top-header h1 { font-size: 22px; color: var(--dark); }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
         
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
@@ -126,12 +139,14 @@ $pageTitle = 'HR Reports';
     <div class="main-content">
         <div class="top-header">
             <h1><i class="fas fa-chart-bar"></i> <?php echo $pageTitle; ?></h1>
-            <div class="user-info">
-                <div class="user-details">
-                    <div class="name"><?php echo $_SESSION['full_name']; ?></div>
-                    <div class="role"><?php echo ucfirst(str_replace('_', ' ', $_SESSION['role_name'])); ?></div>
+            <div class="header-actions">
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="name"><?php echo $_SESSION['full_name']; ?></div>
+                        <div class="role"><?php echo ucfirst(str_replace('_', ' ', $_SESSION['role_name'])); ?></div>
+                    </div>
+                    <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
                 </div>
-                <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
             </div>
         </div>
 

@@ -1,17 +1,17 @@
 <?php
 /**
- * Login Page
+ * Employee Login Page
  * Expense Management ERP - Loydence Academy
  */
 
-require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/employee_auth.php';
 
-// If already logged in, redirect to dashboard
-if (isLoggedIn()) {
-    redirect(BASE_URL . '/dashboard.php');
+// If already logged in as employee, redirect to dashboard
+if (isEmployeeLoggedIn()) {
+    redirect(BASE_URL . '/employee/dashboard.php');
 }
 
 $error = '';
@@ -29,9 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($username) || empty($password)) {
         $error = 'Please enter username and password.';
     } else {
-        $result = login($db, $username, $password);
+        $result = employeeLogin($db, $username, $password);
         if ($result['success']) {
-            redirect(BASE_URL . '/dashboard.php', 'Welcome back!', 'success');
+            redirect(BASE_URL . '/employee/dashboard.php', 'Welcome to Employee Portal!', 'success');
         } else {
             $error = $result['message'];
         }
@@ -39,15 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $siteName = getSetting($db, 'school_name', SITE_NAME);
-$adminName = getSetting($db, 'admin_name', ADMIN_NAME);
-$hrName = getSetting($db, 'hr_name', HR_NAME);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - <?php echo $siteName; ?></title>
+    <title>Employee Login - <?php echo $siteName; ?></title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -56,7 +54,7 @@ $hrName = getSetting($db, 'hr_name', HR_NAME);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/responsive.css">
+    <link rel="stylesheet" href="../assets/responsive.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -73,32 +71,36 @@ $hrName = getSetting($db, 'hr_name', HR_NAME);
         .btn-login { width: 100%; padding: 15px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-family: inherit; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(42, 82, 152, 0.3); }
         .login-footer { text-align: center; padding: 20px; background: #f8f9fa; border-top: 1px solid #eee; }
-        .login-footer p { font-size: 13px; color: #666; margin-bottom: 10px; }
-        .credential-box { background: white; padding: 10px 15px; border-radius: 8px; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .credential-box strong { color: #1e3c72; }
+        .login-footer a { color: #1e3c72; text-decoration: none; font-weight: 500; }
+        .login-footer a:hover { text-decoration: underline; }
+        .alert-error { background: #f8d7da; color: #721c24; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb; }
+        .alert-success { background: #d4edda; color: #155724; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
+        .input-wrapper { position: relative; margin-bottom: 20px; }
+        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
         @media (max-width: 480px) { .login-container { border-radius: 15px; } .login-header { padding: 30px 20px; } .login-header h1 { font-size: 18px; } .login-body { padding: 30px 20px; } }
-        @media (max-width: 360px) { .login-container { max-width: 100%; margin: 10px; min-width: 320px; } .credential-box { padding: 6px 10px; font-size: 10px; } }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
             <div class="logo">
-                <i class="fas fa-school"></i>
+                <i class="fas fa-user-tie"></i>
             </div>
-            <h1><?php echo $siteName; ?></h1>
-            <p>Expense Management System</p>
+            <h1>Employee Portal</h1>
+            <p><?php echo $siteName; ?></p>
         </div>
         
         <div class="login-body">
             <?php if ($error): ?>
-                <div class="alert alert-error">
+                <div class="alert-error">
                     <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
                 </div>
             <?php endif; ?>
             
             <?php if ($success): ?>
-                <div class="alert alert-success">
+                <div class="alert-success">
                     <i class="fas fa-check-circle"></i> <?php echo $success; ?>
                 </div>
             <?php endif; ?>
@@ -110,7 +112,7 @@ $hrName = getSetting($db, 'hr_name', HR_NAME);
                     <label for="username">Username</label>
                     <div class="input-wrapper">
                         <i class="fas fa-user"></i>
-                        <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required autocomplete="username">
                     </div>
                 </div>
                 
@@ -118,7 +120,7 @@ $hrName = getSetting($db, 'hr_name', HR_NAME);
                     <label for="password">Password</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
                     </div>
                 </div>
                 
@@ -129,21 +131,8 @@ $hrName = getSetting($db, 'hr_name', HR_NAME);
         </div>
         
         <div class="login-footer">
-            <p class="mb-2">Default Credentials (Change after first login):</p>
-            <div class="d-flex justify-content-center gap-2 flex-wrap">
-                <div class="credential-box">
-                    <strong>Admin:</strong> admin / admin123
-                </div>
-                <div class="credential-box">
-                    <strong>HR:</strong> hr / admin123
-                </div>
-            </div>
-            <hr>
-            <p class="mb-2">
-                <a href="employee/login.php" class="text-decoration-none">
-                    <i class="fas fa-user-tie"></i> Employee Portal Login
-                </a>
-            </p>
+            <p class="mb-2">Need to access admin portal?</p>
+            <a href="../login.php"><i class="fas fa-arrow-left"></i> Back to Main Login</a>
         </div>
     </div>
     

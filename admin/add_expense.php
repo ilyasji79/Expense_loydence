@@ -68,14 +68,22 @@ $pageTitle = 'Add Expense';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - <?php echo $siteName; ?></title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/responsive.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #1e3c72; --secondary: #2a5298; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --info: #17a2b8; --dark: #343a40; --light: #f8f9fa; --white: #ffffff; --sidebar-width: 260px; }
         body { font-family: 'Poppins', sans-serif; background: #f5f7fa; min-height: 100vh; }
         
-        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); color: white; overflow-y: auto; z-index: 1000; }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); color: white; overflow-y: auto; z-index: 1000; transform: translateX(-100%); }
+        .sidebar.active { transform: translateX(0); }
         .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .sidebar-header .logo { width: 70px; height: 70px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 30px; }
         .sidebar-header h2 { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
@@ -87,18 +95,24 @@ $pageTitle = 'Add Expense';
         .menu-item i { width: 25px; font-size: 16px; }
         .menu-item span { font-size: 14px; }
         
-        .main-content { margin-left: var(--sidebar-width); padding: 20px; min-height: 100vh; }
+        .menu-toggle { display: flex; position: fixed; top: 15px; left: 15px; z-index: 1100; width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 8px; color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3); align-items: center; justify-content: center; }
+        .menu-toggle.active { left: calc(var(--sidebar-width) + 15px); }
         
-        .top-header { background: white; padding: 15px 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .top-header h1 { font-size: 22px; color: var(--dark); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 950; opacity: 0; transition: opacity 0.3s ease; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        
+        .main-content { margin-left: 0; padding: 70px 15px 20px 15px; min-height: 100vh; width: 100%; }
+        
+        .top-header { background: white; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 12px; }
+        .top-header h1 { font-size: 18px; color: var(--dark); margin-left: 35px; flex: 1; min-width: 0; }
         
         .user-info { display: flex; align-items: center; gap: 10px; }
-        .user-avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
-        .user-details { text-align: right; }
-        .user-details .name { font-size: 14px; font-weight: 600; color: var(--dark); }
-        .user-details .role { font-size: 12px; color: #666; }
+        .user-avatar { width: 36px; height: 36px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0; font-size: 14px; }
+        .user-details { display: none; text-align: right; }
+        .user-details .name { font-size: 13px; font-weight: 600; color: var(--dark); }
+        .user-details .role { font-size: 11px; color: #666; }
         
-        .form-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 700px; }
+        .form-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 700px; }
         .form-card h3 { font-size: 18px; color: var(--dark); margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         
         .form-group { margin-bottom: 20px; }
@@ -120,11 +134,36 @@ $pageTitle = 'Add Expense';
         .info-box { background: #e7f3ff; border: 1px solid #b6d4fe; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
         .info-box p { color: #084298; font-size: 13px; }
         
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .main-content { margin-left: 0; }
+        @media (min-width: 481px) {
+            .main-content { padding: 75px 20px 20px 20px; }
+            .user-details { display: block; }
+            .user-details .name { font-size: 14px; }
+            .user-details .role { font-size: 12px; }
+            .menu-toggle { top: 15px; left: 15px; }
+            .menu-toggle.active { left: calc(var(--sidebar-width) + 15px); }
+            .top-header { padding: 15px 18px; }
+            .top-header h1 { font-size: 20px; margin-left: 40px; }
+            .user-avatar { width: 40px; height: 40px; font-size: 16px; }
+            .form-card { padding: 25px; }
+        }
+        
+        @media (min-width: 769px) {
+            .sidebar { transform: translateX(0); }
+            .main-content { margin-left: var(--sidebar-width); padding: 25px; }
+            .menu-toggle { display: none; }
+            .top-header { padding: 15px 25px; margin-bottom: 25px; }
+            .top-header h1 { font-size: 22px; margin-left: 0; }
+            .form-card { padding: 30px; }
+            .form-card h3 { font-size: 18px; margin-bottom: 25px; padding-bottom: 15px; }
+            .form-group { margin-bottom: 20px; }
+            .form-group label { font-size: 14px; margin-bottom: 8px; }
+            .form-group input, .form-group select, .form-group textarea { padding: 12px 15px; font-size: 14px; }
+            .btn { padding: 12px 24px; font-size: 14px; }
         }
     </style>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/responsive.js"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -153,12 +192,14 @@ $pageTitle = 'Add Expense';
     <div class="main-content">
         <div class="top-header">
             <h1><i class="fas fa-plus-circle"></i> <?php echo $pageTitle; ?></h1>
-            <div class="user-info">
-                <div class="user-details">
-                    <div class="name"><?php echo $_SESSION['full_name']; ?></div>
-                    <div class="role"><?php echo ucfirst($_SESSION['role_name']); ?></div>
+            <div class="header-actions">
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="name"><?php echo $_SESSION['full_name']; ?></div>
+                        <div class="role"><?php echo ucfirst($_SESSION['role_name']); ?></div>
+                    </div>
+                    <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
                 </div>
-                <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?></div>
             </div>
         </div>
 

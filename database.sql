@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS roles (
 -- Insert default roles
 INSERT INTO roles (role_name, role_description) VALUES 
 ('admin', 'Full system access - Add/Edit/Delete expenses, Release funds, Generate reports'),
-('hr_manager', 'HR Manager - Approve/Reject expenses, View reports only');
+('hr_manager', 'HR Manager - Approve/Reject expenses, View reports only'),
+('employee', 'Employee - View personal dashboard, attendance, salary, request leave');
 
 -- ============================================================
 -- USERS TABLE
@@ -308,6 +309,384 @@ BEGIN
                 CONCAT('Funds released: ', NEW.voucher_no, ' - Amount: ', NEW.amount),
                 NULL);
     END IF;
+END //
+
+DELIMITER ;
+
+-- ============================================================
+-- EMPLOYEE MODULE TABLES
+-- ============================================================
+
+-- Employee Leave Types
+CREATE TABLE IF NOT EXISTS employee_leave_types (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    leave_type_name VARCHAR(50) NOT NULL,
+    leave_code VARCHAR(20) NOT NULL UNIQUE,
+    description TEXT,
+    days_per_year INT(11) DEFAULT 0,
+    is_paid TINYINT(1) DEFAULT 1,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Insert default leave types
+INSERT INTO employee_leave_types (leave_type_name, leave_code, description, days_per_year, is_paid) VALUES 
+('Annual Leave', 'ANNUAL', 'Annual vacation leave', 30, 1),
+('Sick Leave', 'SICK', 'Medical sick leave', 15, 1),
+('Casual Leave', 'CASUAL', 'Casual personal leave', 10, 1),
+('Unpaid Leave', 'UNPAID', 'Leave without pay', 0, 0),
+('Maternity Leave', 'MATERNITY', 'Maternity leave for female staff', 60, 1),
+('Paternity Leave', 'PATERNITY', 'Paternity leave for male staff', 7, 1),
+('Emergency Leave', 'EMERGENCY', 'Emergency family leave', 5, 1);
+
+-- Employees Table
+CREATE TABLE IF NOT EXISTS employees (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    user_id INT(11) NULL,
+    employee_code VARCHAR(50) NOT NULL UNIQUE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(20),
+    date_of_birth DATE,
+    gender ENUM('male', 'female', 'other') DEFAULT 'male',
+    nationality VARCHAR(50),
+    marital_status ENUM('single', 'married', 'divorced', 'widowed') DEFAULT 'single',
+    address TEXT,
+    department VARCHAR(100),
+    designation VARCHAR(100),
+    join_date DATE NOT NULL,
+    employment_type ENUM('full_time', 'part_time', 'contract', 'temporary') DEFAULT 'full_time',
+    base_salary DECIMAL(12,2) DEFAULT 0,
+    hourly_rate DECIMAL(10,2) DEFAULT 0,
+    bank_name VARCHAR(100),
+    bank_account_number VARCHAR(50),
+    emirates_id VARCHAR(50),
+    passport_number VARCHAR(50),
+    passport_expiry DATE,
+    visa_status VARCHAR(50),
+    emergency_contact_name VARCHAR(100),
+    emergency_contact_phone VARCHAR(20),
+    photo VARCHAR(255),
+    is_active TINYINT(1) DEFAULT 1,
+    created_by INT(11),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_employee_code (employee_code),
+    INDEX idx_email (email),
+    INDEX idx_department (department),
+    INDEX idx_is_active (is_active)
+) ENGINE=InnoDB;
+
+-- Employee Attendance Table (QR-based)
+CREATE TABLE IF NOT EXISTS employee_attendance (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT(11) NOT NULL,
+    attendance_date DATE NOT NULL,
+    check_in_time TIME,
+    check_out_time TIME,
+    late_minutes INT(11) DEFAULT 0,
+    overtime_hours DECIMAL(5,2) DEFAULT 0,
+    status ENUM('present', 'absent', 'late', 'leave', 'holiday') DEFAULT 'present',
+    qr_code VARCHAR(100),
+    location VARCHAR(255),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    UNIQUE KEY idx_employee_date (employee_id, attendance_date),
+    INDEX idx_date (attendance_date),
+    INDEX idx_status (status)
+) ENGINE=InnoDB;
+
+-- Employee Salary Table
+CREATE TABLE IF NOT EXISTS employee_salary (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT(11) NOT NULL,
+    salary_month DATE NOT NULL,
+    base_salary DECIMAL(12,2) NOT NULL,
+    allowances DECIMAL(12,2) DEFAULT 0,
+    overtime_amount DECIMAL(12,2) DEFAULT 0,
+    bonus DECIMAL(12,2) DEFAULT 0,
+    gross_salary DECIMAL(12,2) NOT NULL,
+    tax_deduction DECIMAL(12,2) DEFAULT 0,
+    other_deductions DECIMAL(12,2) DEFAULT 0,
+    total_deductions DECIMAL(12,2) DEFAULT 0,
+    net_salary DECIMAL(12,2) NOT NULL,
+    payment_type ENUM('cash', 'card', 'bank_transfer') DEFAULT 'bank_transfer',
+    payment_status ENUM('pending', 'processed', 'paid') DEFAULT 'pending',
+    payment_date DATE,
+    payment_reference VARCHAR(100),
+    generated_by INT(11),
+    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (generated_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY idx_employee_month (employee_id, salary_month),
+    INDEX idx_month (salary_month),
+    INDEX idx_payment_status (payment_status)
+) ENGINE=InnoDB;
+
+-- Employee Deductions Table
+CREATE TABLE IF NOT EXISTS employee_deductions (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT(11) NOT NULL,
+    deduction_type ENUM('tax', 'fine', 'advance', 'insurance', 'other') NOT NULL,
+    deduction_name VARCHAR(100) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    is_recurring TINYINT(1) DEFAULT 0,
+    status ENUM('active', 'stopped') DEFAULT 'active',
+    notes TEXT,
+    created_by INT(11),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_employee (employee_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB;
+
+-- Employee Overtime Table
+CREATE TABLE IF NOT EXISTS employee_overtime (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT(11) NOT NULL,
+    overtime_date DATE NOT NULL,
+    hours DECIMAL(5,2) NOT NULL,
+    hourly_rate DECIMAL(10,2) NOT NULL,
+    total_amount DECIMAL(12,2) NOT NULL,
+    reason TEXT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT(11),
+    approved_at DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_employee (employee_id),
+    INDEX idx_date (overtime_date)
+) ENGINE=InnoDB;
+
+-- Employee Leave Requests Table
+CREATE TABLE IF NOT EXISTS employee_leave_requests (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT(11) NOT NULL,
+    leave_type_id INT(11) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    total_days DECIMAL(5,1) NOT NULL,
+    reason TEXT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT(11),
+    approval_date DATETIME,
+    rejection_reason TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (leave_type_id) REFERENCES employee_leave_types(id) ON DELETE RESTRICT,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_employee (employee_id),
+    INDEX idx_status (status),
+    INDEX idx_dates (start_date, end_date)
+) ENGINE=InnoDB;
+
+-- Employee Leave Balance Table
+CREATE TABLE IF NOT EXISTS employee_leave_balance (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT(11) NOT NULL,
+    leave_type_id INT(11) NOT NULL,
+    year INT(11) NOT NULL,
+    total_days DECIMAL(5,1) DEFAULT 0,
+    used_days DECIMAL(5,1) DEFAULT 0,
+    remaining_days DECIMAL(5,1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (leave_type_id) REFERENCES employee_leave_types(id) ON DELETE CASCADE,
+    UNIQUE KEY idx_employee_leave_year (employee_id, leave_type_id, year),
+    INDEX idx_year (year)
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- VIEWS FOR EMPLOYEE MODULE
+-- ============================================================
+
+-- View: Employee Details with User
+CREATE OR REPLACE VIEW view_employees AS
+SELECT 
+    e.*,
+    u.username,
+    u.email as user_email,
+    u.is_active as user_is_active
+FROM employees e
+LEFT JOIN users u ON e.user_id = u.id;
+
+-- View: Employee Attendance Summary
+CREATE OR REPLACE VIEW view_employee_attendance_summary AS
+SELECT 
+    employee_id,
+    YEAR(attendance_date) as year,
+    MONTH(attendance_date) as month,
+    COUNT(CASE WHEN status = 'present' THEN 1 END) as present_days,
+    COUNT(CASE WHEN status = 'absent' THEN 1 END) as absent_days,
+    COUNT(CASE WHEN status = 'late' THEN 1 END) as late_days,
+    COUNT(CASE WHEN status = 'leave' THEN 1 END) as leave_days,
+    SUM(late_minutes) as total_late_minutes,
+    SUM(overtime_hours) as total_overtime_hours
+FROM employee_attendance
+GROUP BY employee_id, YEAR(attendance_date), MONTH(attendance_date);
+
+-- View: Leave Requests with Details
+CREATE OR REPLACE VIEW view_leave_requests AS
+SELECT 
+    lr.*,
+    e.full_name as employee_name,
+    e.employee_code,
+    e.department,
+    lt.leave_type_name,
+    lt.leave_code,
+    lt.is_paid,
+    u.full_name as approver_name
+FROM employee_leave_requests lr
+JOIN employees e ON lr.employee_id = e.id
+JOIN employee_leave_types lt ON lr.leave_type_id = lt.id
+LEFT JOIN users u ON lr.approved_by = u.id;
+
+-- View: Salary Details
+CREATE OR REPLACE VIEW view_employee_salary AS
+SELECT 
+    es.*,
+    e.full_name as employee_name,
+    e.employee_code,
+    e.department,
+    e.designation,
+    u.full_name as generated_by_name
+FROM employee_salary es
+JOIN employees e ON es.employee_id = e.id
+LEFT JOIN users u ON es.generated_by = u.id;
+
+-- ============================================================
+-- PROCEDURES FOR EMPLOYEE MODULE
+-- ============================================================
+
+DELIMITER //
+
+-- Procedure to calculate employee attendance for a month
+CREATE PROCEDURE IF NOT EXISTS calculate_monthly_attendance(
+    IN p_employee_id INT(11),
+    IN p_year INT(11),
+    IN p_month INT(11)
+)
+BEGIN
+    SELECT 
+        COUNT(CASE WHEN status = 'present' THEN 1 END) as present_days,
+        COUNT(CASE WHEN status = 'absent' THEN 1 END) as absent_days,
+        COUNT(CASE WHEN status = 'late' THEN 1 END) as late_days,
+        COUNT(CASE WHEN status = 'leave' THEN 1 END) as leave_days,
+        SUM(late_minutes) as total_late_minutes,
+        SUM(overtime_hours) as total_overtime_hours
+    FROM employee_attendance
+    WHERE employee_id = p_employee_id 
+        AND YEAR(attendance_date) = p_year 
+        AND MONTH(attendance_date) = p_month;
+END //
+
+-- Procedure to generate monthly salary
+CREATE PROCEDURE IF NOT EXISTS generate_monthly_salary(
+    IN p_employee_id INT(11),
+    IN p_year INT(11),
+    IN p_month INT(11),
+    OUT p_net_salary DECIMAL(12,2)
+)
+BEGIN
+    DECLARE v_base_salary DECIMAL(12,2);
+    DECLARE v_allowances DECIMAL(12,2) DEFAULT 0;
+    DECLARE v_overtime_amount DECIMAL(12,2) DEFAULT 0;
+    DECLARE v_bonus DECIMAL(12,2) DEFAULT 0;
+    DECLARE v_tax_deduction DECIMAL(12,2) DEFAULT 0;
+    DECLARE v_other_deductions DECIMAL(12,2) DEFAULT 0;
+    DECLARE v_total_deductions DECIMAL(12,2) DEFAULT 0;
+    DECLARE v_gross_salary DECIMAL(12,2);
+    DECLARE v_present_days INT(11);
+    DECLARE v_working_days INT(11) DEFAULT 30;
+    
+    -- Get base salary
+    SELECT base_salary INTO v_base_salary FROM employees WHERE id = p_employee_id;
+    
+    -- Get attendance for the month
+    SELECT 
+        COALESCE(COUNT(CASE WHEN status IN ('present', 'late') THEN 1 END), 0),
+        COALESCE(SUM(overtime_amount), 0)
+    INTO v_present_days, v_overtime_amount
+    FROM employee_overtime
+    WHERE employee_id = p_employee_id 
+        AND YEAR(overtime_date) = p_year 
+        AND MONTH(overtime_date) = p_month
+        AND status = 'approved';
+    
+    -- Calculate deductions based on absent days
+    SET v_other_deductions = (v_base_salary / v_working_days) * (v_working_days - v_present_days);
+    
+    -- Calculate tax (simplified - 5% of gross)
+    SET v_gross_salary = v_base_salary + v_allowances + v_overtime_amount + v_bonus;
+    SET v_tax_deduction = v_gross_salary * 0.05;
+    
+    SET v_total_deductions = v_tax_deduction + v_other_deductions;
+    SET p_net_salary = v_gross_salary - v_total_deductions;
+    
+    -- Insert or update salary record
+    INSERT INTO employee_salary (employee_id, salary_month, base_salary, allowances, overtime_amount, bonus, gross_salary, tax_deduction, other_deductions, total_deductions, net_salary)
+    VALUES (p_employee_id, CONCAT(p_year, '-', LPAD(p_month, 2, '0'), '-01'), v_base_salary, v_allowances, v_overtime_amount, v_bonus, v_gross_salary, v_tax_deduction, v_other_deductions, v_total_deductions, p_net_salary)
+    ON DUPLICATE KEY UPDATE 
+        base_salary = VALUES(base_salary),
+        allowances = VALUES(allowances),
+        overtime_amount = VALUES(overtime_amount),
+        bonus = VALUES(bonus),
+        gross_salary = VALUES(gross_salary),
+        tax_deduction = VALUES(tax_deduction),
+        other_deductions = VALUES(other_deductions),
+        total_deductions = VALUES(total_deductions),
+        net_salary = VALUES(net_salary);
+END //
+
+DELIMITER ;
+
+-- ============================================================
+-- TRIGGERS FOR EMPLOYEE MODULE
+-- ============================================================
+
+DELIMITER //
+
+-- Trigger: Update leave balance when leave is approved
+CREATE TRIGGER IF NOT EXISTS trg_leave_approved
+AFTER UPDATE ON employee_leave_requests
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'approved' AND OLD.status != 'approved' THEN
+        UPDATE employee_leave_balance 
+        SET used_days = used_days + NEW.total_days,
+            remaining_days = total_days - (used_days + NEW.total_days)
+        WHERE employee_id = NEW.employee_id 
+            AND leave_type_id = NEW.leave_type_id 
+            AND year = YEAR(NEW.start_date);
+        
+        -- Mark attendance as leave for the leave period
+        UPDATE employee_attendance 
+        SET status = 'leave'
+        WHERE employee_id = NEW.employee_id 
+            AND attendance_date BETWEEN NEW.start_date AND NEW.end_date;
+    END IF;
+END //
+
+-- Trigger: Auto-create leave balance for new employees
+CREATE TRIGGER IF NOT EXISTS trg_employee_created
+AFTER INSERT ON employees
+FOR EACH ROW
+BEGIN
+    INSERT INTO employee_leave_balance (employee_id, leave_type_id, year, total_days, used_days, remaining_days)
+    SELECT NEW.id, id, YEAR(NOW()), days_per_year, 0, days_per_year
+    FROM employee_leave_types 
+    WHERE is_active = 1 AND days_per_year > 0;
 END //
 
 DELIMITER ;

@@ -15,7 +15,89 @@
         initFullscreenToggle();
         wrapTables();
         handleResize();
+        initSidebarCollapse();
     });
+
+    /**
+     * Initialize sidebar collapse functionality (icons-only mode in fullscreen)
+     */
+    function initSidebarCollapse() {
+        // Check if fullscreen toggle exists
+        const fullscreenBtn = document.querySelector('.fullscreen-toggle');
+        if (!fullscreenBtn) return;
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        // Also handle fullscreen button click
+        fullscreenBtn.addEventListener('click', function () {
+            // Delay to allow fullscreen state to change
+            setTimeout(handleFullscreenChange, 100);
+        });
+    }
+
+    /**
+     * Handle fullscreen change - collapse sidebar in fullscreen mode
+     */
+    function handleFullscreenChange() {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        if (!sidebar) return;
+
+        const isFullscreen = document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement;
+
+        // Get sidebar width from CSS variable
+        const sidebarWidth = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width').trim() || '260px';
+        const collapsedWidth = '80px';
+
+        if (isFullscreen) {
+            // Collapse sidebar to icon-only mode in fullscreen
+            sidebar.classList.add('fullscreen-collapsed');
+            sidebar.classList.remove('collapsed');
+
+            // Adjust main content to expand
+            if (mainContent) {
+                mainContent.classList.add('fullscreen-expanded');
+                mainContent.style.marginLeft = collapsedWidth;
+                mainContent.style.width = 'calc(100% - ' + collapsedWidth + ')';
+                mainContent.style.maxWidth = 'calc(100vw - ' + collapsedWidth + ')';
+            }
+
+            // Prevent horizontal scroll when in fullscreen
+            document.body.style.overflowX = 'hidden';
+            document.documentElement.style.overflowX = 'hidden';
+        } else {
+            // Restore sidebar to full width
+            sidebar.classList.remove('fullscreen-collapsed');
+
+            // Restore main content
+            if (mainContent) {
+                mainContent.classList.remove('fullscreen-expanded');
+
+                // Check if we're on desktop
+                if (window.innerWidth >= 769) {
+                    mainContent.style.marginLeft = sidebarWidth;
+                    mainContent.style.width = 'calc(100% - ' + sidebarWidth + ')';
+                    mainContent.style.maxWidth = 'calc(100vw - ' + sidebarWidth + ')';
+                } else {
+                    mainContent.style.marginLeft = '0';
+                    mainContent.style.width = '100%';
+                    mainContent.style.maxWidth = '100%';
+                }
+            }
+
+            // Restore normal overflow
+            document.body.style.overflowX = '';
+            document.documentElement.style.overflowX = '';
+        }
+    }
 
     /**
      * Initialize mobile menu toggle
@@ -81,21 +163,42 @@
         // Check if fullscreen toggle already exists
         if (document.querySelector('.fullscreen-toggle')) return;
 
-        // Find header actions container
+        // Don't show on login page
+        if (document.querySelector('.login-container')) return;
+
+        // Find header actions container - try multiple selectors
         let headerActions = document.querySelector('.header-actions');
 
-        // If no header actions, create one in the top header
+        // If not found, try to find it within top-header
         if (!headerActions) {
             const topHeader = document.querySelector('.top-header');
             if (topHeader) {
-                headerActions = document.createElement('div');
-                headerActions.className = 'header-actions';
-                topHeader.appendChild(headerActions);
+                // Check if there's already a header-actions div
+                headerActions = topHeader.querySelector('.header-actions');
+
+                // If not, create one and append the existing elements
+                if (!headerActions) {
+                    headerActions = document.createElement('div');
+                    headerActions.className = 'header-actions';
+
+                    // Move notification button and user info to header-actions if they exist
+                    const notificationBtn = topHeader.querySelector('.notification-btn');
+                    const userInfo = topHeader.querySelector('.user-info');
+
+                    if (notificationBtn || userInfo) {
+                        topHeader.appendChild(headerActions);
+                        if (notificationBtn) headerActions.appendChild(notificationBtn);
+                        if (userInfo) headerActions.appendChild(userInfo);
+                    }
+                }
             }
         }
 
-        // If still no container, exit
-        if (!headerActions) return;
+        // If still no container, create a floating fullscreen button
+        if (!headerActions) {
+            createFloatingFullscreenButton();
+            return;
+        }
 
         // Create fullscreen toggle button
         const fullscreenBtn = document.createElement('button');
@@ -103,6 +206,7 @@
         fullscreenBtn.setAttribute('aria-label', 'Toggle fullscreen');
         fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
         fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+        fullscreenBtn.style.cssText = 'visibility: visible !important; opacity: 1 !important; display: inline-flex !important; position: relative !important;';
 
         // Add click handler for fullscreen
         fullscreenBtn.addEventListener('click', function (e) {
@@ -121,38 +225,55 @@
     }
 
     /**
+     * Create floating fullscreen button for pages without header
+     * Only for authenticated pages, not for login page
+     */
+    function createFloatingFullscreenButton() {
+        // Don't create floating button on login page
+        if (document.querySelector('.login-container')) {
+            return;
+        }
+
+        // Check if button already exists
+        if (document.querySelector('.fullscreen-toggle.floating-fullscreen')) {
+            return;
+        }
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'fullscreen-toggle floating-fullscreen';
+        fullscreenBtn.setAttribute('aria-label', 'Toggle fullscreen');
+        fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
+        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+
+        // Add floating styles
+        fullscreenBtn.style.cssText = 'position: fixed !important; top: 15px !important; right: 15px !important; z-index: 9999 !important; visibility: visible !important; opacity: 1 !important; display: inline-flex !important; background: rgba(255,255,255,0.9) !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;';
+
+        // Add click handler for fullscreen
+        fullscreenBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            toggleFullscreen();
+        });
+
+        // Add button to body
+        document.body.appendChild(fullscreenBtn);
+
+        // Listen for fullscreen changes to update icon
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+        document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
+        document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
+    }
+
+    /**
      * Toggle fullscreen mode
      */
     function toggleFullscreen() {
-        const elem = document.documentElement;
-
-        // Check if in fullscreen
-        if (!document.fullscreenElement &&
-            !document.webkitFullscreenElement &&
-            !document.mozFullScreenElement &&
-            !document.msFullscreenElement) {
-
-            // Enter fullscreen
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) { /* Firefox */
-                elem.mozRequestFullScreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
-            }
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.log(`Error attempting fullscreen: ${err.message}`);
+            });
         } else {
-            // Exit fullscreen
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) { /* Safari */
-                document.webkitExitFullscreen();
-            } else if (document.mozCancelFullScreen) { /* Firefox */
-                document.mozCancelFullScreen();
-            } else if (document.msExitFullscreen) { /* IE11 */
-                document.msExitFullscreen();
-            }
+            document.exitFullscreen();
         }
     }
 
@@ -225,6 +346,7 @@
                 const sidebar = document.querySelector('.sidebar');
                 const toggle = document.querySelector('.menu-toggle');
                 const overlay = document.querySelector('.sidebar-overlay');
+                const mainContent = document.querySelector('.main-content');
 
                 // Reset on desktop
                 if (window.innerWidth >= 769) {
@@ -239,6 +361,21 @@
                     }
                     if (overlay) overlay.classList.remove('active');
                     document.body.style.overflow = '';
+
+                    // Reset main content margin if not in fullscreen
+                    if (mainContent && !document.fullscreenElement) {
+                        mainContent.style.marginLeft = '';
+                        mainContent.style.width = '';
+                        mainContent.style.maxWidth = '';
+                    }
+                } else {
+                    // On mobile, ensure sidebar is collapsed
+                    if (sidebar) sidebar.classList.remove('collapsed');
+                    if (mainContent) {
+                        mainContent.style.marginLeft = '0';
+                        mainContent.style.width = '100%';
+                        mainContent.style.maxWidth = '100%';
+                    }
                 }
             }, 250);
         });
