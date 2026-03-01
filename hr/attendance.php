@@ -201,7 +201,7 @@ $pageTitle = 'Attendance Management';
                     <select name="department" class="form-control">
                         <option value="">All Departments</option>
                         <?php foreach ($departments as $dept): ?>
-                            <option value="<?php echo htmlspecialchars($dept['department']); ?>" <?php echo $dept['department'] == $department ? 'selected' :><?php echo htmlspecialchars($ ''; ?>dept['department']); ?></option>
+<option value="<?php echo htmlspecialchars($dept['department']); ?>" <?php echo $dept['department'] == $department ? 'selected' : ''; ?>><?php echo htmlspecialchars($dept['department']); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
