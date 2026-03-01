@@ -223,17 +223,17 @@ $pageTitle = 'Payroll Management';
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
                 </div>
-                <div class="form-group">
-                    <form method="POST" style="display: inline;">
-                        <input type="hidden" name="csrf_token" value="<?php echo csrfToken(); ?>">
-                        <input type="hidden" name="action" value="generate">
-                        <input type="hidden" name="year" value="<?php echo $year; ?>">
-                        <input type="hidden" name="month" value="<?php echo $month; ?>">
-                        <button type="submit" class="btn btn-success" onclick="return confirm('Generate salary for all employees this month?');">
-                            <i class="fas fa-cog"></i> Generate Payroll
-                        </button>
-                    </form>
-                </div>
+            </form>
+            
+            <!-- Generate Payroll Button (separate form) -->
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="<?php echo csrfToken(); ?>">
+                <input type="hidden" name="action" value="generate">
+                <input type="hidden" name="year" value="<?php echo $year; ?>">
+                <input type="hidden" name="month" value="<?php echo $month; ?>">
+                <button type="submit" class="btn btn-success" onclick="return confirm('Generate salary for all employees this month?');">
+                    <i class="fas fa-cog"></i> Generate Payroll
+                </button>
             </form>
         </div>
 

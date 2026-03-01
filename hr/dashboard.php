@@ -8,6 +8,7 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/employee_functions.php';
 require_once __DIR__ . '/../includes/logger.php';
 
 requireHR($db);
@@ -179,7 +180,25 @@ $pageTitle = 'HR Dashboard';
                     <?php endif; ?>
                 </a>
                 <a href="approved_expenses.php" class="menu-item"><i class="fas fa-check-circle"></i><span>Approved</span></a>
-                <a href="reports.php" class="menu-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+            <a href="reports.php" class="menu-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+                <div class="menu-section">Employee Management</div>
+                <a href="employees.php" class="menu-item"><i class="fas fa-users"></i><span>Employees</span></a>
+                <a href="employee-approval.php" class="menu-item">
+                    <i class="fas fa-user-check"></i><span>Employee Approval</span>
+                    <?php if ($pendingCount > 0): ?>
+                        <span class="badge"><?php echo $pendingCount; ?></span>
+                    <?php endif; ?>
+                </a>
+                <a href="attendance.php" class="menu-item"><i class="fas fa-clock"></i><span>Attendance</span></a>
+                <a href="payroll.php" class="menu-item"><i class="fas fa-money-bill-wave"></i><span>Payroll</span></a>
+                <a href="leave_requests.php" class="menu-item">
+                    <i class="fas fa-calendar-minus"></i><span>Leave Requests</span>
+                    <?php 
+                    $pendingLeave = getPendingLeaveCount($db);
+                    if ($pendingLeave > 0): ?>
+                        <span class="badge"><?php echo $pendingLeave; ?></span>
+                    <?php endif; ?>
+                </a>
                 <div class="menu-section">Account</div>
                 <a href="../logout.php" class="menu-item"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
             </div>
